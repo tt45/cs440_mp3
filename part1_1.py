@@ -1,5 +1,6 @@
 import numpy as np
 import math
+import Utility
 
 def read_file(label_file, images_file):
     label_array = []
@@ -25,8 +26,8 @@ def read_file(label_file, images_file):
         denominator_array[i]+=1
     return occurence_array, denominator_array
 
-def analyze_number(number_image, training_result, occurence, k):
-    print number_image
+def analyze_number(number_image, training_result, occurence, k, pos_idx):
+    #print number_image
     occurence = np.array(occurence)
     p_class_array = occurence/5000
     probability_array = np.array([0,0,0,0,0,0,0,0,0,0])
@@ -41,22 +42,26 @@ def analyze_number(number_image, training_result, occurence, k):
                     probability_array[i] += math.log((training_result[i, j, h, 1]+k)/(occurence[i]+2*k))
         probability_array[i] += math.log(p_class_array[i])
 
+    posteriori_matrix[pos_idx] = probability_array
     index = np.argmax(probability_array)
-    print index
-    f = open("result.txt", 'w+')
-    f.write(str(index))
-    f.close
+    test_results.append(str(index))
 
 
-def map_test(test_image_file, training_result, occurence, k_value):
+def map_test(test_image_file, training_result, occurence, k_value, pos_idx):
     line_counter = 0
     with open(test_image_file) as f:
         number_image = []
         for line in f:
-            if line_counter % 28 == 0 and line_counter != 0:
-                analyze_number(number_image, training_result, occurence, k_value)
+            if line_counter == 27999: #don't know why it doesn't read line 28000
+                analyze_number(number_image, training_result, occurence, k_value, pos_idx)
                 number_image = []
                 number_image.append(list(line))
+                pos_idx += 1
+            if line_counter % 28 == 0 and line_counter != 0:
+                analyze_number(number_image, training_result, occurence, k_value, pos_idx)
+                number_image = []
+                number_image.append(list(line))
+                pos_idx += 1
             else:
                 number_image.append(list(line))
             line_counter += 1
@@ -64,8 +69,34 @@ def map_test(test_image_file, training_result, occurence, k_value):
 
 training_results, occurence = read_file("traininglabels", "trainingimages")
 print "training_finished"
-map_test("testimages_small.txt", training_results, occurence, 5)
-# np.set_printoptions(linewidth=200)
-# print np.array(training_results[8,:,:,1])
-# print occurence
-#def training_fun():
+
+#begin test
+test_results = []
+posteriori_matrix = np.zeros((1000, 10))
+
+map_test("testimages.txt", training_results, occurence, 5, 0)
+
+#write results to a result.txt
+results_file = open("result.txt", "w+")
+for res in test_results:
+    results_file.write(res)
+    results_file.write("\n")
+results_file.close
+
+### To do ###
+#highest four pairs in our confusion_matrix are (5,2),(1,4),(0,7),(3,8)
+#and for each pair, display the maps of feature likelihoods for both classes
+#as well as the odds ratio for the two classes
+#For example, for the odds ratio map, you can use '+' to denote features with positive log odds,
+# ' ' for features with log odds close to 1, and '-' for features with negative log odds
+
+#report will cover following three things:
+np.set_printoptions(linewidth=200)
+##### compute accuracy in Utility.py to avoid writing synchronization #####
+# print "Accuracy is : ", Utility.calculate_accuracy("result.txt", "testlabels.txt")*100.0, "%"
+# print "Confusion matrix is : "
+# print Utility.confusion_matrix("result.txt", "testlabels.txt")
+print "highest_prototype: "
+print Utility.highest_prototype(posteriori_matrix, "testlabels.txt")
+print "lowest_prototype: "
+print Utility.lowest_prototype(posteriori_matrix, "testlabels.txt")
