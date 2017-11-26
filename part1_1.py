@@ -1,6 +1,8 @@
 import numpy as np
 import math
 import Utility
+import matplotlib.pyplot as plt
+from matplotlib import cm
 
 def read_file(label_file, images_file):
     label_array = []
@@ -70,6 +72,8 @@ def map_test(test_image_file, training_result, occurence, k_value, pos_idx):
 training_results, occurence = read_file("traininglabels", "trainingimages")
 print "training_finished"
 
+
+
 #begin test
 test_results = []
 posteriori_matrix = np.zeros((1000, 10))
@@ -90,6 +94,18 @@ results_file.close
 #For example, for the odds ratio map, you can use '+' to denote features with positive log odds,
 # ' ' for features with log odds close to 1, and '-' for features with negative log odds
 
+# For 5,2
+# For 5 
+
+
+
+
+
+
+
+
+
+
 #report will cover following three things:
 np.set_printoptions(linewidth=200)
 ##### compute accuracy in Utility.py to avoid writing synchronization #####
@@ -100,3 +116,24 @@ print "highest_prototype: "
 print Utility.highest_prototype(posteriori_matrix, "testlabels.txt")
 print "lowest_prototype: "
 print Utility.lowest_prototype(posteriori_matrix, "testlabels.txt")
+
+# print "for five"
+# print occurence[5]
+# print training_results[5,:,:,1]
+# print training_results[5,:,:,1] + 5
+
+Utility.save_graphs((5,2), training_results, occurence)
+Utility.save_graphs((1,4), training_results, occurence)
+Utility.save_graphs((0,7), training_results, occurence)
+Utility.save_graphs((3,8), training_results, occurence)
+
+
+
+
+# visual_matrix_for_five = np.log((training_results[5, :, :, 1]+5) / (occurence[5] + 10))
+# fig, ax = plt.subplots()
+# cax = ax.imshow(visual_matrix_for_five, interpolation='nearest', cmap=cm.coolwarm)
+# ax.set_title('For Five')
+# cbar = fig.colorbar(cax)
+# plt.savefig()
+

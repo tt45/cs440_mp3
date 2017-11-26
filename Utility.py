@@ -1,4 +1,6 @@
 import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib import cm
 
 def file_to_array(file_name):
     array = []
@@ -81,7 +83,34 @@ def lowest_prototype(posteriori_matrix, test_name):
         return lowest_arr
 
 
+
+def save_fig(data, save_file_name):
+    fig, ax = plt.subplots()
+    cax = ax.imshow(data, interpolation='nearest', cmap=cm.coolwarm)
+    ax.set_title(save_file_name)
+    cbar = fig.colorbar(cax)
+    plt.savefig(save_file_name)
+    plt.close(fig)
+    print 'finished save ' + save_file_name
+
+
+def save_graphs(number_pair, training_results, occurence):
+    first_number, second_number = number_pair
+    first_number_file_name = str(first_number) + "_likely_hood.png" 
+    second_number_file_name = str(second_number) +"_likely_hood.png"
+    odds_ratio_name = str(first_number) + "_" + str(second_number)+ "_odds_ration.png" 
+    visual_matrix_for_first_number = np.log((training_results[first_number, :, :, 1]+5) / (occurence[first_number] + 10))
+    visual_matrix_for_second_number = np.log((training_results[second_number, :, :, 1]+5) / (occurence[second_number] + 10))
+    first_number_result = (training_results[first_number, :, :, 1]+5) / (occurence[first_number] + 10)
+    second_number_result = (training_results[second_number, :, :, 1]+5) / (occurence[second_number] + 10)
+    visual_matrix_for_odds_ratio = np.log(first_number_result / second_number_result)
+    save_fig(visual_matrix_for_first_number, first_number_file_name)
+    save_fig(visual_matrix_for_second_number, second_number_file_name)
+    save_fig(visual_matrix_for_odds_ratio, odds_ratio_name)
+    print "finished saving"
+
+
 np.set_printoptions(linewidth=200)
-print "Accuracy is : ", calculate_accuracy("result.txt", "testlabels.txt")*100.0, "%"
-print "Confusion matrix is : "
-print confusion_matrix("result.txt", "testlabels.txt")
+# print "Accuracy is : ", calculate_accuracy("result.txt", "testlabels.txt")*100.0, "%"
+# print "Confusion matrix is : "
+# print confusion_matrix("result.txt", "testlabels.txt")
